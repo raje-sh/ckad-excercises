@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-shared-volume
+spec:
+  selector:
+    matchLabels:
+      app: nginx-shared-volume
+  template:
+    metadata:
+      labels:
+        app: nginx-shared-volume
+    spec:
+      volumes:
+        - name: shared-volume
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: nginx
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: shared-volume
+              mountPath: /usr/share/nginx/html
+      initContainers:
+        - name: busybox
+          image: busybox
+          args:
+            - /bin/sh
+            - -c
+            - wget -O /work-dir/index.html http://neverssl.com/online
+          volumeMounts:
+            - name: shared-volume
+              mountPath: /work-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+spec:
+  selector:
+    app: nginx-shared-volume
+  ports:
+    - port: 80
+      targetPort: 80
