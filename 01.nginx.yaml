@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: proxy
+  labels:
+    purpose: reverse-proxy
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-proxy
+  namespace: proxy
+  labels:
+    purpose: practice
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: be-proxy
+  template:
+    metadata:
+      labels:
+        app: be-proxy
+    spec:
+      containers:
+        - name: nginx-proxy
+          image: nginx
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-proxy-srv
+  namespace: proxy
+spec:
+  selector:
+    app: be-proxy
+  ports:
+    - port: 8000
+      targetPort: 80
