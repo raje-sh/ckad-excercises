@@ -1,0 +1,243 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: inmem
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: james-inmem
+  namespace: inmem
+spec:
+  selector:
+    matchLabels:
+      app: james-inmem
+  template:
+    metadata:
+      labels:
+        app: james-inmem
+    spec:
+      containers:
+        - name: james-inmem
+          image: apache/james:demo-3.7.0
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 25
+            - containerPort: 143
+            - containerPort: 465
+            - containerPort: 993
+            - containerPort: 80
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+            initialDelaySeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+            initialDelaySeconds: 10
+          volumeMounts:
+            - mountPath: /root/conf/smtpserver.xml
+              name: smtpconf-v
+              subPath: smtpserver.xml
+            - mountPath: /root/conf/logback.xml
+              name: logconf-v
+              subPath: logback.xml
+      volumes:
+        - name: smtpconf-v
+          configMap:
+            name: smtpconf
+        - name: logconf-v
+          configMap:
+            name: logback
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smtp
+  namespace: inmem
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "instance"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  type: LoadBalancer
+  selector:
+    app: james-inmem
+  ports:
+    - port: 8001
+      targetPort: 25
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: imap
+  namespace: inmem
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "instance"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  type: LoadBalancer
+  selector:
+    app: james-inmem
+  ports:
+    - port: 8002
+      targetPort: 143
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin
+  namespace: inmem
+spec:
+  selector:
+    app: james-inmem
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+data:
+  smtpserver.xml: |-
+    <smtpservers>
+        <smtpserver enabled="true">
+            <jmxName>smtpserver-global</jmxName>
+            <bind>0.0.0.0:25</bind>
+            <connectionBacklog>200</connectionBacklog>
+            <tls socketTLS="false" startTLS="false">
+                <privateKey>file://conf/private.key</privateKey>
+                <certificates>file://conf/private.csr</certificates>
+            </tls>
+            <connectiontimeout>360</connectiontimeout>
+            <connectionLimit>0</connectionLimit>
+            <connectionLimitPerIP>0</connectionLimitPerIP>
+            <auth>
+                <announce>never</announce>
+                <requireSSL>false</requireSSL>
+            </auth>
+            <!-- <authorizedAddresses>127.0.0.0/8</authorizedAddresses> -->
+            <authorizedAddresses>0.0.0.0/0</authorizedAddresses>
+            <verifyIdentity>false</verifyIdentity>
+            <maxmessagesize>0</maxmessagesize>
+            <addressBracketsEnforcement>true</addressBracketsEnforcement>
+            <smtpGreeting>Apache JAMES awesome SMTP Server</smtpGreeting>
+            <handlerchain>
+                <handler class="org.apache.james.smtpserver.fastfail.ValidRcptHandler"/>
+                <handler class="org.apache.james.smtpserver.CoreCmdHandlerLoader"/>
+            </handlerchain>
+        </smtpserver>
+        <smtpserver enabled="true">
+            <jmxName>smtpserver-TLS</jmxName>
+            <bind>0.0.0.0:465</bind>
+            <connectionBacklog>200</connectionBacklog>
+            <tls socketTLS="true" startTLS="false">
+                <privateKey>file://conf/private.key</privateKey>
+                <certificates>file://conf/private.csr</certificates>
+            </tls>
+            <connectiontimeout>360</connectiontimeout>
+            <connectionLimit>0</connectionLimit>
+            <connectionLimitPerIP>0</connectionLimitPerIP>
+            <!--
+               Authorize only local users
+            -->
+            <auth>
+                <announce>forUnauthorizedAddresses</announce>
+                <requireSSL>false</requireSSL>
+            </auth>
+            <authorizedAddresses>127.0.0.0/8</authorizedAddresses>
+            <!-- Trust authenticated users -->
+            <verifyIdentity>false</verifyIdentity>
+            <maxmessagesize>0</maxmessagesize>
+            <addressBracketsEnforcement>true</addressBracketsEnforcement>
+            <smtpGreeting>Apache JAMES awesome SMTP Server</smtpGreeting>
+            <handlerchain>
+                <handler class="org.apache.james.smtpserver.fastfail.ValidRcptHandler"/>
+                <handler class="org.apache.james.smtpserver.CoreCmdHandlerLoader"/>
+            </handlerchain>
+        </smtpserver>
+        <smtpserver enabled="true">
+            <jmxName>smtpserver-authenticated</jmxName>
+            <bind>0.0.0.0:587</bind>
+            <connectionBacklog>200</connectionBacklog>
+            <tls socketTLS="false" startTLS="true">
+                <privateKey>file://conf/private.key</privateKey>
+                <certificates>file://conf/private.csr</certificates>
+            </tls>
+            <connectiontimeout>360</connectiontimeout>
+            <connectionLimit>0</connectionLimit>
+            <connectionLimitPerIP>0</connectionLimitPerIP>
+            <!--
+               Authorize only local users
+            -->
+            <auth>
+                <announce>forUnauthorizedAddresses</announce>
+                <requireSSL>false</requireSSL>
+            </auth>
+            <authorizedAddresses>127.0.0.0/8</authorizedAddresses>
+            <!-- Trust authenticated users -->
+            <verifyIdentity>false</verifyIdentity>
+            <maxmessagesize>0</maxmessagesize>
+            <addressBracketsEnforcement>true</addressBracketsEnforcement>
+            <smtpGreeting>Apache JAMES awesome SMTP Server</smtpGreeting>
+            <handlerchain>
+                <handler class="org.apache.james.smtpserver.fastfail.ValidRcptHandler"/>
+                <handler class="org.apache.james.smtpserver.CoreCmdHandlerLoader"/>
+            </handlerchain>
+        </smtpserver>
+    </smtpservers>
+kind: ConfigMap
+metadata:
+  name: smtpconf
+---
+apiVersion: v1
+data:
+  logback.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration>
+
+        <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+            <resetJUL>true</resetJUL>
+        </contextListener>
+
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %highlight([%-5level]) %logger{15} - %msg%n%rEx</pattern>
+                <immediateFlush>false</immediateFlush>
+            </encoder>
+        </appender>
+
+        <appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>/logs/james.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+                <fileNamePattern>/logs/james.%i.log.tar.gz</fileNamePattern>
+                <minIndex>1</minIndex>
+                <maxIndex>3</maxIndex>
+            </rollingPolicy>
+
+            <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                <maxFileSize>100MB</maxFileSize>
+            </triggeringPolicy>
+
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%-5level] %logger{15} - %msg%n%rEx</pattern>
+                <immediateFlush>false</immediateFlush>
+            </encoder>
+        </appender>
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="LOG_FILE" />
+        </root>
+
+        <logger name="org.apache.james" level="INFO" />
+        <logger name="o.a.j" level="WARN" />
+
+    </configuration>
+kind: ConfigMap
+metadata:
+  name: logback
