@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  volumes:
+  - name: html
+    emptyDir: {}  
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  initContainers:
+  - image: busybox
+    name: bb
+    volumeMounts:
+    - name: html
+      mountPath: /work-dir
+    command:
+    - sh 
+    - -c 
+    - wget -O /work-dir/index.html http://neverssl.com/online
+
