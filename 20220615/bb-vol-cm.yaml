@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    purpose: attach-env-as-volume
+  name: bb
+spec:
+  containers:
+  - image: busybox
+    name: bb
+    command:
+    - /bin/sh
+    - -c
+    - sleep 3600
+    envFrom:
+    - secretRef:
+        name: mysecret2
+    volumeMounts:
+    - name: cm
+      mountPath: /etc/lala
+    - name: secretmap
+      mountPath: /etc/secrets
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  volumes:
+  - name: cm
+    configMap:
+      name: config
+  - name: secretmap
+    secret:
+      secretName: mysecret2

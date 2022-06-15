@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    env:
+    - name: option
+      valueFrom:
+        configMapKeyRef:
+          key: foo
+          name: config
+  dnsPolicy: ClusterFirst

@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: v1
+  name: nginx1
+spec:
+  containers:
+  - image: nginx
+    name: nginx1
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: v1
+  name: nginx2
+spec:
+  containers:
+  - image: nginx
+    name: nginx2
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: v1
+  name: nginx3
+spec:
+  containers:
+  - image: nginx
+    name: nginx3
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx
+  name: canary-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+      version: v2
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: nginx
+        version: v2
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+      initContainers:
+      - image: busybox
+        name: bb
+        command:
+        - /bin/sh
+        - -c
+        - echo -e "hostname:\t$(hostname)\nIpV4:\t$(hostname -i)\nAppVersion:\tv2" > /root/index.html
+        volumeMounts:
+        - name: html
+          mountPath: /root
+      volumes:
+      - name: html
+        emptyDir: {}
