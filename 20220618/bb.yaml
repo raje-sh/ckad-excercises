@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: busybox
+  name: busybox
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - sleep 3600
+    image: busybox
+    name: busybox
+    volumeMounts:
+    - name: pwd
+      mountPath: /etc/foo
+      readOnly: true
+  - command:
+    - /bin/sh
+    - -c
+    - sleep 3600
+    image: busybox
+    name: bb2
+    volumeMounts:
+    - name: pwd
+      mountPath: /etc/foo
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  volumes:
+  - name: pwd
+    emptyDir: {}
