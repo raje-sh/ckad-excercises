@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: sega
+  name: sega
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - sleep 3600
+    image: busybox
+    name: tails
+  - command:
+    - /bin/sh
+    - -c
+    - sleep 3600
+    image: nginx
+    name: sonic
+    env:
+    - name: NGINX_PORT
+      value: "8080"
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

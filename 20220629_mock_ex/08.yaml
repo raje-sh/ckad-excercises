@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  DB_HOST: c3FsMzIyLm15Y29tcGFueS5jb20=
+  DB_NAME: U1FM
+  DB_PORT: MzMwNg==
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: db-secret

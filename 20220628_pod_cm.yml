@@ -1,0 +1,49 @@
+apiVersion: v1
+data:
+  markdown: |
+    # K8S practice
+
+    https://github.com/dgkanatsios/CKAD-exercises
+kind: ConfigMap
+metadata:
+  name: test
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  volumes:
+  - name: cm-md
+    configMap:
+      name: test
+      items:
+      - key: markdown
+        path: index.html
+  containers:
+  - image: nginx
+    name: nginx
+    volumeMounts:
+    - name: cm-md
+      mountPath: /usr/share/nginx/html
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx
+status:
+  loadBalancer: {}

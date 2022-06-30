@@ -1,0 +1,76 @@
+apiVersion: v1
+data:
+  DB_PASS: eGRrd2x3
+  DB_USER: UkFKRVNI
+kind: Secret
+metadata:
+  name: sec-1
+---
+apiVersion: v1
+data:
+  DB_ENDPOINT: aws_aurora.com
+kind: ConfigMap
+metadata:
+  name: cm-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bb
+  name: bb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bb
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bb
+    spec:
+      volumes:
+        - name: cm
+          configMap:
+            name: cm-1
+        - name: sec
+          secret:
+            secretName: sec-1
+        - name: dapi
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
+        - name: all-in-one
+          projected:
+            sources:
+              - secret:
+                  name: sec-1
+              - configMap:
+                  name: cm-1
+              - downwardAPI:
+                  items:
+                    - path: "labels"
+                      fieldRef:
+                        fieldPath: metadata.labels
+      containers:
+        - image: busybox
+          name: busybox
+          command: ["bin/sh", "-c", "sleep 3600"]
+          resources: {}
+          volumeMounts:
+            - name: cm
+              mountPath: /var/data/cm
+            - name: sec
+              mountPath: /var/data/sec
+            - name: dapi
+              mountPath: /var/data/dapi
+        - image: busybox
+          name: bb-projected
+          command: ["bin/sh", "-c", "sleep 3600"]
+          resources: {}
+          volumeMounts:
+            - name: all-in-one
+              mountPath: /var/data

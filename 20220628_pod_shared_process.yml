@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  shareProcessNamespace: true
+  containers:
+  - image: nginx
+    name: nginx
+  - image: busybox
+    name: bb
+    command: ["/bin/sh", "-c", "sleep 3600"]
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always

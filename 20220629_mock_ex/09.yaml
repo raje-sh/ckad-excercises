@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: bb
+  name: bb
+spec:
+  containers:
+  - image: node
+    name: bb
+    resources: {}
+    securityContext:
+      # allowPrivilegeEscalation: false
+      privileged: true
+      capabilities:
+        add: ["SYS_TIME"]
+      runAsUser: 0
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
