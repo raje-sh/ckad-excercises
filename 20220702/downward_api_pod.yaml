@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    volumeMounts:
+    - name: test
+      mountPath: /usr/share/nginx/projected_data
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  volumes:
+  - name: test
+    projected:
+     sources:
+     - configMap:
+         name: test-cm
+     - downwardAPI:
+         items:
+         - fieldRef:
+             fieldPath: metadata.uid
+           path: podUUID
+     - secret:
+         name: test-secret
+---  
+apiVersion: v1
+data:
+  cm1: kdwldlwkwlklwke
+  cm2: dkwlwkeeke
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: test-cm
+---
+apiVersion: v1
+data:
+  secret1: a2R3bGRsd2t3bGtsd2tl
+  secret2: ZGt3bHdrZWVrZQ==
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: test-secret

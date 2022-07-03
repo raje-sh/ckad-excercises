@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: canary-nginx
+    version: v1
+  name: canary-nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: canary-nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: canary-nginx
+    spec:
+      volumes:
+      - name: pod-ip
+        downwardAPI:
+          items:
+          - path: index.html
+            fieldRef:
+              fieldPath: metadata.name
+              # fieldPath: status.podIP
+      containers:
+      - image: nginx
+        name: nginx
+        volumeMounts:
+        - name: pod-ip
+          mountPath: /usr/share/nginx/html
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: canary-nginx
+    version: v1
+  name: canary-nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: canary-nginx
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: canary-nginx
+    version: v2
+  name: canary-nginx-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: canary-nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: canary-nginx
+    spec:
+      volumes:
+      - name: pod-ip
+        downwardAPI:
+          items:
+          - path: index.html
+            fieldRef:
+              fieldPath: metadata.name
+              # fieldPath: status.podIP
+      containers:
+      - image: nginx
+        name: nginx
+        volumeMounts:
+        - name: pod-ip
+          mountPath: /usr/share/nginx/html

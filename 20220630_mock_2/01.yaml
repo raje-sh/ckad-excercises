@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    tier: frontend
+    app: my-webapp
+  name: my-webapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        tier: frontend
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    tier: frontend
+  name: front-end-service
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    nodePort: 30083
+  selector:
+    tier: frontend
+  type: NodePort
+status:
+  loadBalancer: {}

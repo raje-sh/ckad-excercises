@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx-n-sel
+  name: nginx-n-sel
+spec:
+  nodeSelector:
+    accelerator: nvidia-tesla-p100
+  containers:
+  - image: nginx
+    name: nginx-n-sel
+    ports:
+    - containerPort: 80
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

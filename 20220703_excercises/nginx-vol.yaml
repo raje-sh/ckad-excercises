@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: nginx-vol
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx-vol
+status:
+  loadBalancer: {}
+---
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx-vol
+  name: nginx-vol
+spec:
+  volumes:
+  - name: content
+    emptyDir: {}
+  initContainers:
+  - image: busybox
+    name: bb
+    volumeMounts:
+    - name: content
+      mountPath: /work-dir
+    command: ["/bin/sh", "-c", "wget -O /work-dir/index.html http://neverssl.com/online"]
+  containers:
+  - image: nginx
+    name: nginx-vol
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - name: content
+      mountPath: /usr/share/nginx/html
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

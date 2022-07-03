@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: multi-pod
+  name: multi-pod
+spec:
+  containers:
+  - image: nginx 
+    name: jupiter
+    env:
+    - name: type
+      value: planet
+    resources: {}
+  - image: busybox
+    name: europa
+    env:
+    - name: type
+      value: moon
+    command: ["sh", "-c", "sleep 4800"]
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

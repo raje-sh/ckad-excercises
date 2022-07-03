@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: whalesay
+spec:
+  backoffLimit: 6
+  completions: 10
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - command:
+        - sh
+        - -c
+        - cowsay I am going to ace CKAD
+        image: docker/whalesay
+        name: whalesay
+        resources: {}
+      restartPolicy: Never
+status: {}
