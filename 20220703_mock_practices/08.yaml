@@ -1,0 +1,73 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: test-network-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: bb-client-kdsn00201
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app_type: web-or-storage
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app_type: web-or-storage
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: bb-client-kdsn00201
+  name: bb-client-kdsn00201
+spec:
+  containers:
+  - image: busybox
+    name: bb-client-kdsn00201
+    resources: {}
+    command: ["sleep", "3600"]
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    app_type: web-or-storage
+  name: bb-web
+spec:
+  containers:
+  - image: busybox
+    name: bb-web
+    resources: {}
+    command: ["sleep", "3600"]
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    app_type: web-or-storage
+  name: bb-storage
+spec:
+  containers:
+  - image: busybox
+    name: bb-storage
+    resources: {}
+    command: ["sleep", "3600"]
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: pod-resources
+spec: {}
+status: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx-resources
+  name: nginx-resources
+  namespace: pod-resources
+spec:
+  containers:
+  - image: nginx
+    name: nginx-resources
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
